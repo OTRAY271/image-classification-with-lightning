@@ -33,7 +33,9 @@ def train(cfg: DictConfig) -> None:
 
     if "lr" not in cfg.litmodule:
         tuner = Tuner(trainer)
-        tuner.lr_find(model=model, datamodule=datamodule)
+        lr_finder = tuner.lr_find(model=model, datamodule=datamodule)
+        fig = lr_finder.plot(suggest=True)
+        fig.savefig(f"{wandb_logger.experiment.dir}/lr_finder.png")
 
     trainer.fit(model=model, datamodule=datamodule)
 

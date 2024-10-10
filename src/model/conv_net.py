@@ -2,24 +2,14 @@ import torch
 from torch import nn
 
 
-class ConvNet(nn.Module):
-    def __init__(self, input_channels: int, hidden_dim: int, output_dim: int):
+class BaseConvNet(nn.Module):
+    def __init__(self, backbone: nn.Module, head: nn.Module):
         super().__init__()
 
-        self.backbone = nn.Sequential(
-            self.__double_conv_block(input_channels, 16),
-            self.__double_conv_block(16, 32, second_padding=2),
-            self.__double_conv_block(32, 64),
-        )
-        self.head = nn.Sequential(
-            nn.Linear(64 * 4 * 4, hidden_dim),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(hidden_dim, output_dim),
-            nn.Dropout(0.5),
-        )
+        self.backbone = backbone
+        self.head = head
 
-    def __double_conv_block(
+    def _double_conv_block(
         self,
         in_channels: int,
         out_channels: int,
@@ -46,5 +36,41 @@ class ConvNet(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.backbone(x)
-        x = x.view(-1, 64 * 4 * 4)
+        x = torch.flatten(x, 1)
         return self.head(x)
+
+
+class ConvNet28(BaseConvNet):
+    def __init__(self, input_channels: int, hidden_dim: int, output_dim: int):
+        backbone = nn.Sequential(
+            self._double_conv_block(input_channels, 16),
+            self._double_conv_block(16, 32, second_padding=2),
+            self._double_conv_block(32, 64),
+        )
+        head = nn.Sequential(
+            nn.Linear(64 * 4 * 4, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(hidden_dim, output_dim),
+            nn.Dropout(0.5),
+        )
+
+        super().__init__(backbone, head)
+
+
+class ConvNet32(BaseConvNet):
+    def __init__(self, input_channels: int, hidden_dim: int, output_dim: int):
+        backbone = nn.Sequential(
+            self._double_conv_block(input_channels, 16),
+            self._double_conv_block(16, 32),
+            self._double_conv_block(32, 64),
+        )
+        head = nn.Sequential(
+            nn.Linear(64 * 4 * 4, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(hidden_dim, output_dim),
+            nn.Dropout(0.5),
+        )
+
+        super().__init__(backbone, head)

@@ -5,7 +5,7 @@ from torch.utils import data
 from torchvision import datasets, transforms
 
 
-class MNISTDataModule(L.LightningDataModule):
+class CIFAR10DataModule(L.LightningDataModule):
     def __init__(
         self,
         data_dir: str,
@@ -25,28 +25,30 @@ class MNISTDataModule(L.LightningDataModule):
         )
 
     def setup(self, stage: str) -> None:
-        mnist_train_val = datasets.MNIST(
+        cifar10_train_val = datasets.CIFAR10(
             self.data_dir, download=True, transform=self.transform, train=True
         )
 
         train_indices, val_indices = train_test_split(
-            range(len(mnist_train_val)),
-            train_size=55000,
-            stratify=mnist_train_val.targets,
+            range(len(cifar10_train_val)),
+            train_size=45000,
+            stratify=cifar10_train_val.targets,
             random_state=torch.random.initial_seed(),
         )
-        self.mnist_train = data.Subset(mnist_train_val, train_indices)
-        self.mnist_val = data.Subset(mnist_train_val, val_indices)
+        self.cifar10_train = data.Subset(cifar10_train_val, train_indices)
+        self.cifar10_val = data.Subset(cifar10_train_val, val_indices)
 
-        self.mnist_test = datasets.MNIST(
+        self.cifar10_test = datasets.CIFAR10(
             self.data_dir, download=True, transform=self.transform, train=False
         )
 
     def train_dataloader(self) -> data.DataLoader:
-        return data.DataLoader(self.mnist_train, shuffle=True, **self.dataloader_config)
+        return data.DataLoader(
+            self.cifar10_train, shuffle=True, **self.dataloader_config
+        )
 
     def val_dataloader(self) -> data.DataLoader:
-        return data.DataLoader(self.mnist_val, **self.dataloader_config)
+        return data.DataLoader(self.cifar10_val, **self.dataloader_config)
 
     def test_dataloader(self) -> data.DataLoader:
-        return data.DataLoader(self.mnist_test, **self.dataloader_config)
+        return data.DataLoader(self.cifar10_test, **self.dataloader_config)
