@@ -2,7 +2,7 @@
 name = "image-classification-with-lightning"
 version = "0.1.0"
 description = ""
-authors = ["OTRAY271 <mojayarto@gmail.com>"]
+authors = ["OTRAY271 <mojayarto.ai@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
